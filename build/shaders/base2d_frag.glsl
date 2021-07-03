@@ -1,7 +1,7 @@
 
 #version 330 core
 
-out vec4 frag_color
+out vec4 frag_color;
 
 in vec2 frag_uv;
 in vec2 frag_pos;

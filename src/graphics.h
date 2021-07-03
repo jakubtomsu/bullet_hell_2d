@@ -18,10 +18,11 @@ extern camera_t main_camera;
 extern unsigned int shader_used;
 
 void graphics_initialize();
-void graphics_update_buffers();
 void graphics_render_world(camera_t* cam);
 
 void draw_quad(m_v2 pos, float rot, m_v2 scale, m_v3 col);
+
+unsigned int texture_import(const char* file_name, unsigned int gl_interpolation, unsigned int gl_wrapping);
 
 unsigned int shader_import(const char* vert_name, const char* frag_name);
 void shader_use(unsigned int shader);

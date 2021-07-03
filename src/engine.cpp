@@ -45,13 +45,10 @@ int main() {
     
 	int monitor_count;
 	GLFWmonitor* monitor = glfwGetMonitors(&monitor_count)[0]; // 0 is main monitor
-	const GLFWgammaramp* gammaramp = glfwGetGammaRamp(monitor);
 	
 	const GLFWvidmode* mode = glfwGetVideoMode(monitor);
 	//window_height = mode->height;
 	//window_width = mode->width;
-    
-    printf("hey ya 2!\n");
     
 	GLFWwindow* window = glfwCreateWindow(window_x, window_y, "game", NULL, NULL);
 	if (window == NULL) {
@@ -61,23 +58,26 @@ int main() {
 	}
 	//glfwSetWindowMonitor(window, monitor, 0, 0, mode->width, mode->height, mode->refreshRate);
 	glfwMakeContextCurrent(window);
-	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	glfwSetInputMode(window, GLFW_CURSOR,  GLFW_CURSOR_DISABLED);
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
-	glfwSetCursorPosCallback(window, input_mouse_move_callback);
-	glfwSetMouseButtonCallback(window, input_mouse_button_callback);
-	glfwSetKeyCallback(window, input_key_press_callback);
+	glfwSetCursorPosCallback(window,       input_mouse_move_callback);
+	glfwSetMouseButtonCallback(window,     input_mouse_button_callback);
+	glfwSetKeyCallback(window,             input_key_press_callback);
 	//glfwSwapInterval(0); // disable vsync
-    //glViewport(0, 0, window_x, window_y);
-    //srand(time(0)); // set seed for rand()
+    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
+		printf("(MAIN) Failed to initialize GLAD\n");
+		return -1;
+	}
+    glViewport(0, 0, window_x, window_y);
+    srand(time(0)); // set seed for rand()
     
-    printf("hey ya 3!\n");
+    printf("starting main game loop\n");
     
     long long engine_frame = 0;
     while(!engine_should_quit) {
         engine_frame++;
         printf("--- FRAME %li ------------------\n", engine_frame);
-        //float current_time = glfwGetTime();
-        float current_time = 0;
+        float current_time = glfwGetTime();
         delta_time = current_time - last_frame;
         last_frame = current_time;
         
@@ -85,11 +85,13 @@ int main() {
         
         
         
-        if(input_pressed(GLFW_KEY_F1)) engine_should_quit = true;
+        if(input_pressed(GLFW_KEY_F5)) engine_should_quit = true;
         
         glfwSetWindowShouldClose(window, engine_should_quit);
         
     }
+    
+    glfwTerminate();
     
     return 0;
 }

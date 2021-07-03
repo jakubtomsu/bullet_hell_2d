@@ -48,8 +48,10 @@ int main() {
 	//glfwSetKeyCallback(window, input_key_press_callback);
 	//glfwSwapInterval(0); // disable vsync
     
+    int a = 10;
+    int b = 0xFFA;
     while(true) {
-        printf("LOL");
+        printf("hex = %x decimal = %i\n", b, b);
     }
     
     return 0;

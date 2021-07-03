@@ -6,10 +6,11 @@
 #include <stdlib.h>
 #include <time.h>
 
+#define HANDMADE_MATH_IMPLEMENTATION
+#include "m_math.h"
 
 #include "engine.h"
 #include "graphics.h"
-#include "math.h"
 #include "input.h"
 
 
@@ -18,6 +19,8 @@ float last_frame;
 int window_x = 900;
 int window_y = 500;
 bool engine_should_quit = false;
+GLFWwindow* engine_glfw_window;
+std::string engine_root_path;
 
 
 static void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
@@ -27,11 +30,15 @@ static void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 	//camera_global_render_buffers_update();
 }
 
-int main() {
+int main(int argc, char* argv[]) {
     
     printf("hey ya!\n");
     
-    
+    {
+		unsigned int pos = std::string(argv[0]).find_last_of("\\/");
+        engine_root_path = std::string(argv[0]).substr(0, pos) + "\\";
+		printf("(MAIN) root path: %s\n", engine_root_path.c_str());
+	}
     
     glfwInit();
     
@@ -56,6 +63,8 @@ int main() {
 		glfwTerminate();
 		return -1;
 	}
+    engine_glfw_window = window;
+    printf("window created\n");
 	//glfwSetWindowMonitor(window, monitor, 0, 0, mode->width, mode->height, mode->refreshRate);
 	glfwMakeContextCurrent(window);
 	glfwSetInputMode(window, GLFW_CURSOR,  GLFW_CURSOR_DISABLED);
@@ -63,13 +72,21 @@ int main() {
 	glfwSetCursorPosCallback(window,       input_mouse_move_callback);
 	glfwSetMouseButtonCallback(window,     input_mouse_button_callback);
 	glfwSetKeyCallback(window,             input_key_press_callback);
-	//glfwSwapInterval(0); // disable vsync
+	glfwSwapInterval(1); // 0 == no vsync
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
 		printf("(MAIN) Failed to initialize GLAD\n");
 		return -1;
 	}
     glViewport(0, 0, window_x, window_y);
     srand(time(0)); // set seed for rand()
+    
+    
+    
+    
+    
+    graphics_initialize();
+    
+    
     
     printf("starting main game loop\n");
     
@@ -83,7 +100,7 @@ int main() {
         
         input_global_update();
         
-        
+        graphics_render_world(&main_camera);
         
         if(input_pressed(GLFW_KEY_F5)) engine_should_quit = true;
         

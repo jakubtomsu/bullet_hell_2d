@@ -2,7 +2,7 @@
 #ifndef INPUT_H
 #define INPUT_H
 
-#include "math.h"
+#include "m_math.h"
 
 struct GLFWwindow;
 

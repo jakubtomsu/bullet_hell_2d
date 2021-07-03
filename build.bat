@@ -1,0 +1,1 @@
+gcc -g C:\cgame\src\engine.cpp -o C:\cgame\build\game.exe

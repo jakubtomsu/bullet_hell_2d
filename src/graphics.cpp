@@ -81,7 +81,9 @@ void graphics_initialize() {
     shader_base2d = shader_import("base2d_vert.glsl", "base2d_frag.glsl");
     shader_use(shader_base2d);
     
-    
+    shader_set_int("main_texture",0);
+    unsigned int tex = texture_import("test.jpg", GL_LINEAR, GL_REPEAT);
+    shader_set_texture2d(0, tex);
     
 }
 

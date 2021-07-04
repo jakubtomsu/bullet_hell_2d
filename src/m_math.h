@@ -67,6 +67,8 @@ M_MATH_INLINE bool operator== (m_v3 left, m_v3 right) { return  (left.x == right
 M_MATH_INLINE bool operator!= (m_v2 left, m_v2 right) { return !(left == right); }
 M_MATH_INLINE bool operator!= (m_v3 left, m_v3 right) { return !(left == right); }
 
+M_MATH_INLINE m_v2 m_v2_lerp(m_v2 a, m_v2 b, float time) { return ((a * time) + (b * (1.0f - time))); }
+
 
 
 #endif // M_MATH_H

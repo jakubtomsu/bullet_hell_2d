@@ -10,6 +10,8 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 #include "entity.h"
+#include "input.h"
+#include "engine.h"
 
 
 camera_t main_camera;
@@ -21,7 +23,7 @@ unsigned int shader_used;
 unsigned int shader_base2d;
 
 unsigned int quadVAO, quadVBO;
-
+unsigned int cursor_tex;
 
 static void print_gl_errors(const char* text) {
 	auto e = glGetError();
@@ -87,6 +89,8 @@ void graphics_initialize() {
     shader_set_int("main_texture",0);
     tex = texture_import("test.png", GL_LINEAR, GL_REPEAT);
     
+    
+    cursor_tex = texture_import("cursor.png", GL_NEAREST, GL_REPEAT);
 }
 
 void graphics_render_world(camera_t* cam) {
@@ -102,8 +106,12 @@ void graphics_render_world(camera_t* cam) {
     shader_set_float("aspect_ratio",(float)window_x / (float)window_y);
     
     draw_quad({0,0}, 1, tex, {1,1,1});
-    draw_quad({1,0}, 1, tex, {0,1,0});
-    draw_quad({0,1}, 1, tex, {1,0,0});
+    draw_quad({1,0}, 1, tex, {1,0,0});
+    draw_quad({0,1}, 1, tex, {0,1,0});
+    
+    m_v2 cursor_pos = input_mouse_coords / m_v2{(float)window_x, (float)window_y};
+    cursor_pos.y = 1.0f - cursor_pos.y;
+    draw_quad(cursor_pos, 1, cursor_tex, {1,1,1});
     
     
     int ecount = 0;

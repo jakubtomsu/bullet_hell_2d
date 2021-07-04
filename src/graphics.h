@@ -18,6 +18,7 @@ typedef struct camera_t {
 extern camera_t main_camera;
 extern unsigned int shader_used;
 
+
 void graphics_initialize();
 void graphics_render_world(camera_t* cam);
 
@@ -28,7 +29,7 @@ unsigned int texture_import(const char* file_name, unsigned int gl_interpolation
 unsigned int shader_import(const char* vert_name, const char* frag_name);
 void shader_use(unsigned int shader);
 static inline void shader_set_bool(const char* name, bool value) {
-	glUniform1i(glGetUniformLocation(shader_used, name), (int)value);
+	glUniform1i(glGetUniformLocation(shader_used\, name), (int)value);
 }
 static inline void shader_set_int(const char* name, int value) {
 	glUniform1i(glGetUniformLocation(shader_used, name), value);

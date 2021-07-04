@@ -3,8 +3,7 @@
 #define INPUT_H
 
 #include "m_math.h"
-
-struct GLFWwindow;
+#include <GLFW/glfw3.h>
 
 enum input_state {
     UP,       // key is in idle state

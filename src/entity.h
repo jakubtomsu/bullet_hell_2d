@@ -8,13 +8,13 @@
 struct entity_t;
 
 enum collision_mode {
-    ENTER,
-    STAY,
-    LEAVE
+    COLLIDING,
+    NOT_COLLIDING,
+    STARTED_COLLIDING,
+    STOPPED_COLLIDING
 };
 
 typedef void (*entity_update_func)(int, entity_t*);
-typedef void (*entity_collision_func)(int, entity_t*, collision_mode);
 
 typedef struct entity_t {
     
@@ -23,21 +23,23 @@ typedef struct entity_t {
     m_v3 color;
     unsigned int texture;
     
+    // collision
+    collision_mode col_mode;
+    int colliding_entity;
     
     //functions
-    
     entity_update_func update_func;
-    entity_collision_func col_func;
     
     
     // gameplay data
-    
     float health;
     m_v2 velocity;
+    float time;
     
 } entity_t;
 
 #define ENTITY_DEFAULT (entity_t{{},1,{1,1,1},0})
+#define ENTITY_ID_NULL -1
 
 using_cmap_3(entity, int, entity_t);
 extern cmap_entity entity_global_container;

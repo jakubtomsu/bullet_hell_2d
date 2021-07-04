@@ -20,7 +20,7 @@ extern unsigned int shader_used;
 void graphics_initialize();
 void graphics_render_world(camera_t* cam);
 
-void draw_quad(m_v2 pos, float rot, m_v2 scale, m_v3 col);
+void draw_quad(m_v2 pos, float scale, unsigned texture, m_v3 col);
 
 unsigned int texture_import(const char* file_name, unsigned int gl_interpolation, unsigned int gl_wrapping);
 

@@ -12,6 +12,7 @@
 #include "engine.h"
 #include "graphics.h"
 #include "input.h"
+#include "entity.h"
 
 
 float delta_time;
@@ -21,6 +22,8 @@ int window_y = 500;
 bool engine_should_quit = false;
 GLFWwindow* engine_glfw_window;
 std::string engine_root_path;
+long long engine_frame;
+float engine_time;
 
 
 static void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
@@ -87,22 +90,35 @@ int main(int argc, char* argv[]) {
     graphics_initialize();
     
     
+    for(int i = 0; i < 10; i++) {
+        entity_t e = ENTITY_DEFAULT;
+        e.position = m_randv2() * 10;
+        e.scale = (i % 4) + 1;
+        e.texture = 0;
+        entity_spawn(e);
+    }
     
     printf("starting main game loop\n");
     
-    long long engine_frame = 0;
+    engine_frame = 0;
     while(!engine_should_quit) {
         engine_frame++;
         printf("--- FRAME %li ------------------\n", engine_frame);
         float current_time = glfwGetTime();
         delta_time = current_time - last_frame;
         last_frame = current_time;
+        engine_time += delta_time;
+        
         
         input_global_update();
         
+        entity_global_update();
+        
+        
+        
         graphics_render_world(&main_camera);
         
-        if(input_pressed(GLFW_KEY_F5)) engine_should_quit = true;
+        if(input_pressed(GLFW_KEY_F5) || input_pressed(GLFW_KEY_ESCAPE)) engine_should_quit = true;
         
         glfwSetWindowShouldClose(window, engine_should_quit);
         

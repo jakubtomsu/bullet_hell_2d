@@ -13,15 +13,25 @@ enum collision_mode {
     STARTED_COLLIDING,
     STOPPED_COLLIDING
 };
+#define COLLISION_WORLD_SIZE 30
 
 typedef void (*entity_update_func)(int, entity_t*);
 
-typedef struct entity_t {
+struct entity_flags_t {
+    unsigned char is_enemy : 1;
+    unsigned char is_bullet : 1;
+    unsigned char collision_static : 1;
+};
+
+struct entity_t {
     
     m_v2 position;
-    float scale;
+    m_v2 scale;
     m_v3 color;
     unsigned int texture;
+    entity_flags_t flags;
+    m_v2 texture_scale;
+    m_v2 texture_offset;
     
     // collision
     collision_mode col_mode;
@@ -30,15 +40,14 @@ typedef struct entity_t {
     //functions
     entity_update_func update_func;
     
-    
     // gameplay data
     float health;
     m_v2 velocity;
     float time;
     
-} entity_t;
+};
 
-#define ENTITY_DEFAULT (entity_t{{},1,{1,1,1},0})
+#define ENTITY_DEFAULT (entity_t{{},{1,1},{1,1,1},0,{},1.0f})
 #define ENTITY_ID_NULL -1
 
 using_cmap_3(entity, int, entity_t);

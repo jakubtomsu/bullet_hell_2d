@@ -101,11 +101,11 @@ int main(int argc, char* argv[]) {
     for(int i = 0; i < 10; i++) {
         entity_t e = ENTITY_DEFAULT;
         e.position = m_randv2() * 10;
-        e.scale = (i % 4) + 1;
+        e.scale = m_v2{1,1} * ((i % 4) + 1);
         e.texture = 0;
-        e.update_func = test_update_func;
+        e.flags.collision_static = 0;
         entity_spawn(e);
-    }
+    }\
     
     printf("starting main game loop\n");
     

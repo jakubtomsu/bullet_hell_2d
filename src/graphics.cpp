@@ -105,20 +105,20 @@ void graphics_render_world(camera_t* cam) {
     shader_set_float("view_rot",  cam->rotation);
     shader_set_float("aspect_ratio",(float)window_x / (float)window_y);
     
-    draw_quad({0,0}, 1, tex, {1,1,1});
-    draw_quad({1,0}, 1, tex, {1,0,0});
-    draw_quad({0,1}, 1, tex, {0,1,0});
+    draw_quad({0,0},{ 1,1}, tex,{1,1},{}, {1,1,1});
+    draw_quad({1,0},{ 1,1}, tex,{1,1},{}, {1,0,0});
+    draw_quad({0,1},{ 1,1}, tex,{1,1},{}, {0,1,0});
     
     m_v2 cursor_pos = input_mouse_coords / m_v2{(float)window_x, (float)window_y};
     cursor_pos.y = 1.0f - cursor_pos.y;
-    draw_quad(cursor_pos, 1, cursor_tex, {1,1,1});
+    draw_quad(cursor_pos, {1,1}, cursor_tex,{1,1},{}, {1,1,1});
     
     
     int ecount = 0;
     c_foreach_3(i, cmap_entity, entity_global_container) {
         entity_t* e = &i.ref->second;
-        draw_quad(e->position, e->scale, e->texture, e->color);
-        ecount ++;
+        draw_quad(e->position, e->scale, e->texture, e->texture_scale, e->texture_offset, e->color);
+        ecount++;
     }
     
     printf("entity count = %i\n", ecount);
@@ -128,12 +128,13 @@ void graphics_render_world(camera_t* cam) {
     
 }
 
-void draw_quad(m_v2 pos, float scale,unsigned int texture, m_v3 col) {
-    //shader_set_vec4("mainColor", { color,alpha });
+void draw_quad(m_v2 pos, m_v2 scale,unsigned int texture, m_v2 texture_scale, m_v2 texture_offset, m_v3 col) {
     
     shader_set_vec2("transform_pos", pos);
-    shader_set_float("transform_scale", scale);
+    shader_set_vec2("transform_scale", scale);
     shader_set_int("main_texture", 0);
+    shader_set_vec2("texture_scale", texture_scale);
+    shader_set_vec2("texture_offset", texture_offset);
     shader_set_vec3("color", col);
     
     // render quad

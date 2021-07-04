@@ -10,7 +10,7 @@ uniform vec2 view_pos;
 uniform float view_dist;
 uniform float aspect_ratio;
 uniform vec2 transform_pos;
-uniform float transform_scale;
+uniform vec2 transform_scale;
 
 void main() {
     vec2 pos = ((vert_pos * transform_scale) + (transform_pos - view_pos)) * vec2(1.0, aspect_ratio) / view_dist;

@@ -15,6 +15,7 @@ enum input_state {
 };
 
 extern m_v2 input_mouse_offset;
+extern m_v2 input_mouse_coords;
 
 bool input_up(const int glfw_key);
 bool input_down(const int glfw_key);

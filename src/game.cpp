@@ -35,7 +35,7 @@ void game_initalize() {
     entity_t e = ENTITY_DEFAULT;
     // { x, y }
     e.position = { 2, 4 };
-    e.scale = 30.5f;
+    e.scale = 6.5f;
     // add texture to entity
     e.texture = player_texture;
     // set the update function for the entity

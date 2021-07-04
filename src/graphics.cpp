@@ -94,8 +94,6 @@ void graphics_render_world(camera_t* cam) {
     glClearColor(cam->background_color.x, cam->background_color.y, cam->background_color.z, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
     
-    cam->distance = 20;
-    cam->position = {sinf(engine_time*2),cosf(engine_time*2)};
     
     shader_use(shader_base2d);
     shader_set_vec2("view_pos",   cam->position);

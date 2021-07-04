@@ -8,10 +8,11 @@
 typedef struct camera_t {
     
 	m_v2 position;
-	float distance = 1;
+	float distance = 15;
     float rotation;
     
 	m_v3 background_color = { 0.18,0.15,0.2 };
+    
 } camera_t;
 
 extern camera_t main_camera;

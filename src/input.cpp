@@ -8,6 +8,7 @@
 
 m_v2 input_mouse_last;
 m_v2 input_mouse_offset;
+m_v2 input_mouse_coords;
 #define INPUT_STATE_BUFFER_SIZE GLFW_KEY_LAST + 1
 input_state input_state_buffer[INPUT_STATE_BUFFER_SIZE];
 
@@ -35,6 +36,7 @@ void input_mouse_move_callback(GLFWwindow* window, double xpos, double ypos) {
     input_mouse_offset.y += c_yoffset;
     input_mouse_last.x = xpos;
     input_mouse_last.y = ypos;
+    input_mouse_coords = input_mouse_last;
 }
 
 void input_mouse_button_callback(GLFWwindow* window, int button, int action, int mods) {

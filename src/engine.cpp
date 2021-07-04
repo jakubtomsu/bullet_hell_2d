@@ -13,6 +13,7 @@
 #include "graphics.h"
 #include "input.h"
 #include "entity.h"
+#include "game.h"
 
 
 float delta_time;
@@ -31,6 +32,10 @@ static void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 	window_y = height;
 	glViewport(0, 0, width, height);
 	//camera_global_render_buffers_update();
+}
+
+void test_update_func(int id, entity_t* entity) {
+    entity->position += m_randv2() * 0.1f;
 }
 
 int main(int argc, char* argv[]) {
@@ -90,11 +95,15 @@ int main(int argc, char* argv[]) {
     graphics_initialize();
     
     
+    game_initalize();
+    
+    
     for(int i = 0; i < 10; i++) {
         entity_t e = ENTITY_DEFAULT;
         e.position = m_randv2() * 10;
         e.scale = (i % 4) + 1;
         e.texture = 0;
+        e.update_func = test_update_func;
         entity_spawn(e);
     }
     
@@ -112,8 +121,17 @@ int main(int argc, char* argv[]) {
         
         input_global_update();
         
-        entity_global_update();
+        /* spawn test
+        entity_t e = ENTITY_DEFAULT;
+        e.position = m_randv2() * 10;
+        e.scale = 2;
+        e.texture = 0;
+        e.update_func = test_update_func;
+        int eid = entity_spawn(e);
+        */
+        //if(m_rand01() > 0.5) entity_destroy(eid); // destroy test
         
+        entity_global_update();
         
         
         graphics_render_world(&main_camera);

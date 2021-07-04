@@ -22,14 +22,22 @@ typedef struct entity_t {
     float scale;
     m_v3 color;
     unsigned int texture;
-    float health;
+    
+    
+    //functions
     
     entity_update_func update_func;
     entity_collision_func col_func;
     
+    
+    // gameplay data
+    
+    float health;
+    m_v2 velocity;
+    
 } entity_t;
 
-#define ENTITY_DEFAULT (entity_t{{},1,{1,1,1},0,10})
+#define ENTITY_DEFAULT (entity_t{{},1,{1,1,1},0})
 
 using_cmap_3(entity, int, entity_t);
 extern cmap_entity entity_global_container;

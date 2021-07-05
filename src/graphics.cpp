@@ -99,7 +99,7 @@ void graphics_initialize() {
     
     
     cursor_tex = texture_import("cursor.png", GL_NEAREST, GL_REPEAT);
-    floor_tex = texture_import("test.png",GL_NEAREST, GL_REPEAT);
+    floor_tex = texture_import("background.png",GL_NEAREST, GL_REPEAT);
     
     
     for(int i = 0; i < 10; i++) {
@@ -113,10 +113,10 @@ void graphics_initialize() {
 }
 
 void graphics_render_world(camera_t* cam) {
-    
-    glClearColor(cam->background_color.x, cam->background_color.y, cam->background_color.z, 1.0f);
+    /*
+        glClearColor(cam->background_color.x, cam->background_color.y, cam->background_color.z, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
-    
+    */
     
     shader_use(shader_base2d);
     shader_set_vec2("view_pos",   cam->position);
@@ -125,13 +125,12 @@ void graphics_render_world(camera_t* cam) {
     shader_set_float("aspect_ratio",(float)window_x / (float)window_y);
     
     const float floor_scale = 1000;
-    const float h_floor_scale = floor_scale * 0.25f;
     const float floor_tile_scale = 10;
     draw_quad(
-              {-h_floor_scale,-h_floor_scale},
+              {0,0},
               {floor_scale, floor_scale},
               floor_tex,
-              {floor_scale / floor_tile_scale,floor_scale / floor_tile_scale},
+              {floor_scale / floor_tile_scale,(floor_scale / floor_tile_scale) * 1.5f},
               {},
               {1,1,1}
               );

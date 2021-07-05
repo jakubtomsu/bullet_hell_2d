@@ -90,7 +90,7 @@ void entity_global_update() {
             float l = m_v2_length(dir);
             float s12 = fabsf(e->scale.x) + fabsf(e2->scale.x);
             if(l > (s12 * 0.5f)) continue;
-            m_v2 ndir = (dir / l) * 0.499f;
+            m_v2 ndir = (dir / l) * 0.495f;
             float penetration = s12 - l;
             m_v2 mid = m_v2_lerp(e->position, e2->position, 0.5);
             

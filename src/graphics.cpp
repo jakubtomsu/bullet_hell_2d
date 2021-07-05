@@ -12,6 +12,7 @@
 #include "entity.h"
 #include "input.h"
 #include "engine.h"
+#include "game.h"
 
 
 camera_t main_camera;
@@ -151,6 +152,9 @@ void graphics_render_world(camera_t* cam) {
     
     const float cursor_scale = 0.25f;
     draw_quad(cursor_pos, {cursor_scale,cursor_scale}, cursor_tex,{1,1},{}, {0.8,1,1});
+    
+    
+    game_on_render_update();
     
     
     glfwSwapBuffers(engine_glfw_window);

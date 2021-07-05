@@ -99,8 +99,8 @@ void entity_global_update() {
             
             e->collision_count++;
             e2->collision_count++;
-            if(e->on_collision_func) e->on_collision_func(i.ref->first, e, j.ref->first);
-            if(e2->on_collision_func) e2->on_collision_func(j.ref->first, e2, i.ref->first);
+            if(e->on_collision_func) e->on_collision_func(i.ref->first, e, j.ref->first, e2);
+            if(e2->on_collision_func) e2->on_collision_func(j.ref->first, e2, i.ref->first, e);
         }
     }
     

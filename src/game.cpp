@@ -115,9 +115,6 @@ void projectile_update(int id, entity_t* entity) {
     entity->position += entity->velocity;
     entity->color -= m_v3{0.8,1,1} * delta_time * 0.05f;
     
-    if(entity->colliding_entity != ENTITY_ID_NULL){
-        // damage hit entity
-    }
 }
 
 void enemy_update(int id, entity_t* entity) {
@@ -148,6 +145,7 @@ void game_load_level() {
     e.update_func = player_update;
     e.color = {1,1,1};
     e.texture_scale = {0.25,1};
+    e.health = 4;
     player_entity_id = entity_spawn(e);
     
     
@@ -183,4 +181,18 @@ void game_late_update() {
     
     printf("player ptr = 0x%x\n",(int)player_entity);
     
+}
+
+void game_on_render_update() {
+    
+    for(int i = 0; i < player_entity->health; i++) {
+        draw_quad(
+                  camera_ndc_to_world(&main_camera, { -0.5, 0.4}),
+                  {(float)main_camera.distance * 0.1f,(float)main_camera.distance * 0.1f},
+                  enemy_texture,
+                  {1,1},
+                  {},
+                  {1,0,0}
+                  );
+    }
 }

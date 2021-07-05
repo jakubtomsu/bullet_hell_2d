@@ -8,7 +8,7 @@
 struct entity_t;
 
 typedef void (*entity_update_func)(int, entity_t*);
-typedef void (*entity_on_collision_func)(int, entity_t*, int);
+typedef void (*entity_on_collision_func)(int, entity_t*, int, entity_t*);
 
 struct entity_flags_t {
     unsigned char collision_static : 1;
@@ -25,7 +25,6 @@ struct entity_t {
     m_v2 texture_offset;
     
     // collision
-    int colliding_entity;
     int collision_count;
     
     //functions
@@ -33,7 +32,7 @@ struct entity_t {
     entity_on_collision_func on_collision_func;
     
     // gameplay data
-    float health;
+    unsigned int health;
     m_v2 velocity;
     float time;
     int step;

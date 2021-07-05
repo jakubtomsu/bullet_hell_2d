@@ -113,7 +113,7 @@ int main(int argc, char* argv[]) {
         game_early_update();
         printf("-> ENTITY UPDATE\n");
         entity_global_update();
-        printf("-> GAME LATE\n");
+        printf("-> GAME LATE UPDATE\n");
         game_late_update();
         printf("-> GRAPHICS\n");
         graphics_render_world(&main_camera);

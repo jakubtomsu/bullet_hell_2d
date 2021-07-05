@@ -24,7 +24,7 @@ void graphics_initialize();
 void graphics_render_world(camera_t* cam);
 
 static inline m_v2 camera_ndc_to_world(camera_t* cam, m_v2 a) {
-    return (cam->position + (a  * cam->distance));
+    return (cam->position + (a / m_v2{1.0, (float)window_x / (float)window_y}  * cam->distance));
 }
 
 void draw_quad(m_v2 pos, m_v2 scale, unsigned texture,m_v2 texture_scale, m_v2 texture_offset, m_v3 col);

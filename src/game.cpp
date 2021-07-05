@@ -187,8 +187,8 @@ void game_on_render_update() {
     
     for(int i = 0; i < player_entity->health; i++) {
         draw_quad(
-                  camera_ndc_to_world(&main_camera, { -0.5, 0.4}),
-                  {(float)main_camera.distance * 0.1f,(float)main_camera.distance * 0.1f},
+                  camera_ndc_to_world(&main_camera, { -0.95f + (float)i / 15.0f, 0.95}),
+                  {(float)main_camera.distance * 0.04f,(float)main_camera.distance * 0.04f},
                   enemy_texture,
                   {1,1},
                   {},

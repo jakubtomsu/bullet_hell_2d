@@ -23,7 +23,9 @@
 #ifndef CCOMMON_H_INCLUDED
 #define CCOMMON_H_INCLUDED
 
+#ifndef __USE_MINGW_ANSI_STDIO
 #define __USE_MINGW_ANSI_STDIO 1
+#endif
 
 #include <stdint.h>
 #include <stddef.h>

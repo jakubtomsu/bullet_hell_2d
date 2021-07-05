@@ -67,9 +67,10 @@ M_MATH_INLINE bool operator== (m_v3 left, m_v3 right) { return  (left.x == right
 M_MATH_INLINE bool operator!= (m_v2 left, m_v2 right) { return !(left == right); }
 M_MATH_INLINE bool operator!= (m_v3 left, m_v3 right) { return !(left == right); }
 
-M_MATH_INLINE m_v2 m_v2_lerp(m_v2 a, m_v2 b, float time) { return ((a * time) + (b * (1.0f - time))); }
+M_MATH_INLINE m_v2 m_v2_lerp(m_v2 a, m_v2 b, float time) { return ((a *(1.0f - time)) + (b * time)); }
 M_MATH_INLINE float m_v2_lengthsq(m_v2 a) { return ((a.x * a.x) + (a.y * a.y)); }
 M_MATH_INLINE float m_v2_length(m_v2 a) { return (sqrtf((a.x * a.x) + (a.y * a.y)));}
+M_MATH_INLINE m_v2 m_v2_normalize(m_v2 a) {return (a / m_v2_length(a)); }
 
 
 

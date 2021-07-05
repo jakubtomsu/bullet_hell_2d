@@ -36,7 +36,10 @@ void input_mouse_move_callback(GLFWwindow* window, double xpos, double ypos) {
     input_mouse_offset.y += c_yoffset;
     input_mouse_last.x = xpos;
     input_mouse_last.y = ypos;
-    input_mouse_coords = input_mouse_last;
+    input_mouse_coords += input_mouse_offset;
+    input_mouse_coords.x = m_clampf(input_mouse_coords.x, 0.0,window_x);
+    input_mouse_coords.y = m_clampf(input_mouse_coords.y, 0.0,window_y);
+    
 }
 
 void input_mouse_button_callback(GLFWwindow* window, int button, int action, int mods) {

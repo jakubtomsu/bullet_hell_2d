@@ -16,6 +16,7 @@ enum collision_mode {
 #define COLLISION_WORLD_SIZE 30
 
 typedef void (*entity_update_func)(int, entity_t*);
+typedef void (*entity_on_collision_func)(int, entity_t*, int);
 
 struct entity_flags_t {
     unsigned char is_enemy : 1;
@@ -36,14 +37,18 @@ struct entity_t {
     // collision
     collision_mode col_mode;
     int colliding_entity;
+    int collision_count;
     
     //functions
     entity_update_func update_func;
+    entity_on_collision_func on_collision_func;
     
     // gameplay data
     float health;
     m_v2 velocity;
     float time;
+    int step;
+    int mode;
     
 };
 
@@ -58,5 +63,7 @@ int entity_spawn(entity_t entity_data);
 void entity_destroy(int entity_id);
 entity_t* entity_get(int entity_id);
 void entity_global_update();
+typedef void (*collision_callback)(int id, entity_t* entity);
+int collision_query_circle(m_v2 pos, float radius, collision_callback callback);
 
 #endif // ENTITY_H

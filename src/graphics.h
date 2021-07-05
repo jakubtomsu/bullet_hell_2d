@@ -17,7 +17,7 @@ typedef struct camera_t {
 
 extern camera_t main_camera;
 extern unsigned int shader_used;
-
+extern m_v2 cursor_pos;
 
 void graphics_initialize();
 void graphics_render_world(camera_t* cam);

@@ -16,6 +16,8 @@
 #include "game.h"
 
 
+
+
 float delta_time;
 float last_frame;
 int window_x = 900;
@@ -31,11 +33,6 @@ static void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 	window_x = width;
 	window_y = height;
 	glViewport(0, 0, width, height);
-	//camera_global_render_buffers_update();
-}
-
-void test_update_func(int id, entity_t* entity) {
-    entity->position += m_randv2() * 0.1f;
 }
 
 int main(int argc, char* argv[]) {
@@ -91,21 +88,11 @@ int main(int argc, char* argv[]) {
     
     
     
-    
     graphics_initialize();
-    
     
     game_initalize();
     
     
-    for(int i = 0; i < 10; i++) {
-        entity_t e = ENTITY_DEFAULT;
-        e.position = m_randv2() * 10;
-        e.scale = m_v2{1,1} * ((i % 4) + 1);
-        e.texture = 0;
-        e.flags.collision_static = 0;
-        entity_spawn(e);
-    }\
     
     printf("starting main game loop\n");
     
@@ -113,28 +100,19 @@ int main(int argc, char* argv[]) {
     while(!engine_should_quit) {
         engine_frame++;
         printf("--- FRAME %li ------------------\n", engine_frame);
-        float current_time = glfwGetTime();
+        float current_time = (float)clock() / (float)CLOCKS_PER_SEC;
         delta_time = current_time - last_frame;
         last_frame = current_time;
         engine_time += delta_time;
+        printf("clock = %i\n", clock());
         
         
         input_global_update();
         
-        /* spawn test
-        entity_t e = ENTITY_DEFAULT;
-        e.position = m_randv2() * 10;
-        e.scale = 2;
-        e.texture = 0;
-        e.update_func = test_update_func;
-        int eid = entity_spawn(e);
-        */
-        //if(m_rand01() > 0.5) entity_destroy(eid); // destroy test
-        
         entity_global_update();
         
-        
         graphics_render_world(&main_camera);
+        
         
         if(input_pressed(GLFW_KEY_F5) || input_pressed(GLFW_KEY_ESCAPE)) engine_should_quit = true;
         

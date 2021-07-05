@@ -71,29 +71,58 @@ void entity_global_update() {
     
     
     // terribly slow collision :(
+    
+    c_foreach(i, cmap_entity, entity_global_container) {
+        entity_t* e = &i.ref->second;
+		
+        switch(e->col_mode) {
+            case collision_mode::STARTED_COLLIDING:{
+                e->col_mode = collision_mode::COLLIDING;
+            }break;
+            case collision_mode::COLLIDING:{
+                if(e->collision_count <= 0) e->col_mode = collision_mode::STOPPED_COLLIDING;
+            }break;
+            case collision_mode::STOPPED_COLLIDING:{
+                if(e->collision_count > 0) e->col_mode = collision_mode::STARTED_COLLIDING;
+                else e->col_mode = collision_mode::NOT_COLLIDING;
+            }break;
+            case collision_mode::NOT_COLLIDING:{
+                if(e->collision_count > 0) e->col_mode = collision_mode::STARTED_COLLIDING;
+            }break;
+        }
+        
+        e->collision_count = 0;
+    }
+    
     c_foreach(i, cmap_entity, entity_global_container) {
         entity_t* e = &i.ref->second;
 		
         c_foreach(j, cmap_entity, entity_global_container) {
             entity_t* e2 = &j.ref->second;
             
-            if(i.ref->first == j.ref->first) continue;
+            if(i.ref->first >= j.ref->first) continue;
             
             m_v2 dir = e2->position - e->position;
             
             float l = m_v2_length(dir);
-            float s12 = e->scale.x + e2->scale.x;
+            float s12 = fabsf(e->scale.x) + fabsf(e2->scale.x);
             if(l > (s12 * 0.5f)) continue;
-            m_v2 ndir = (dir / l);
+            m_v2 ndir = (dir / l) * 0.5f;
             float penetration = s12 - l;
-            float factor = e2->flags.collision_static ? 0.0f : (e->flags.collision_static ? 1.0f : 0.5f);
-            m_v2 mid = m_v2_lerp(e->position, e2->position, factor);
+            m_v2 mid = m_v2_lerp(e->position, e2->position, 0.5);
             
-            e->position = mid - (ndir * penetration * (1.0f - factor));
-            e2->position = mid + (ndir * penetration * factor);
+            if(!e->flags.collision_static) e->position = mid - (ndir * penetration);
+            if(!e2->flags.collision_static)  e2->position = mid + (ndir * penetration);
             
+            e->collision_count++;
+            e2->collision_count++;
+            if(e->on_collision_func) e->on_collision_func(i.ref->first, e, j.ref->first);
+            if(e2->on_collision_func) e2->on_collision_func(j.ref->first, e2, i.ref->first);
         }
-        
     }
+    
+}
+
+int collision_query_circle(m_v2 pos, float radius, collision_callback callback) {
     
 }

@@ -16,6 +16,7 @@
 
 camera_t main_camera;
 unsigned int shader_used;
+m_v2 cursor_pos = {0.5,0.5};
 
 
 #define SHADER_FOLDER_PATH (engine_root_path + "\\shaders\\")
@@ -109,19 +110,19 @@ void graphics_render_world(camera_t* cam) {
     draw_quad({1,0},{ 1,1}, tex,{1,1},{}, {1,0,0});
     draw_quad({0,1},{ 1,1}, tex,{1,1},{}, {0,1,0});
     
-    m_v2 cursor_pos = input_mouse_coords / m_v2{(float)window_x, (float)window_y};
-    cursor_pos.y = 1.0f - cursor_pos.y;
-    draw_quad(cursor_pos, {1,1}, cursor_tex,{1,1},{}, {1,1,1});
-    
     
     int ecount = 0;
     c_foreach_3(i, cmap_entity, entity_global_container) {
         entity_t* e = &i.ref->second;
         draw_quad(e->position, e->scale, e->texture, e->texture_scale, e->texture_offset, e->color);
         ecount++;
+        
     }
-    
     printf("entity count = %i\n", ecount);
+    
+    const float cursor_scale = 0.25f;
+    draw_quad(cursor_pos, {cursor_scale,cursor_scale}, cursor_tex,{1,1},{}, {0.8,1,1});
+    
     
     glfwSwapBuffers(engine_glfw_window);
     print_gl_errors("after swap buffers");

@@ -2,6 +2,9 @@
 #ifndef GAME_H
 #define GAME_H
 
-void game_initalize();
+void game_initialize();
+void game_load_level();
+void game_early_update();
+void game_late_update();
 
 #endif //GAME_H

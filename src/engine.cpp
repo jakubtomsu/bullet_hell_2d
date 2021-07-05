@@ -89,7 +89,9 @@ int main(int argc, char* argv[]) {
     
     graphics_initialize();
     
-    game_initalize();
+    game_initialize();
+    
+    game_load_level();
     
     
     
@@ -105,11 +107,15 @@ int main(int argc, char* argv[]) {
         engine_time += delta_time;
         printf("clock = %i\n", clock());
         
-        
+        printf("-> INPUT\n");
         input_global_update();
-        
+        printf("-> GAME EARLY UPDATE\n");
+        game_early_update();
+        printf("-> ENTITY UPDATE\n");
         entity_global_update();
-        
+        printf("-> GAME LATE\n");
+        game_late_update();
+        printf("-> GRAPHICS\n");
         graphics_render_world(&main_camera);
         
         

@@ -10,7 +10,7 @@ unsigned int player_texture_run_horizontal;
 unsigned int player_texture_run_up;
 unsigned int player_texture_run_down;
 unsigned int enemy_texture;
-int player_entity_id;
+int player_entity_id = -1;
 entity_t* player_entity;
 
 
@@ -29,6 +29,8 @@ void player_update(int id, entity_t* entity) {
     
 #define  PLAYER_ON_RUN entity->texture_scale.x = 1.0f / 4.0f;
 #define PLAYER_ON_STOP_RUNNING entity->texture_scale.x = 0.25f; entity->time = 0;
+    
+    
     
     if(input_down(GLFW_KEY_W)){
         dir.y++;
@@ -110,7 +112,7 @@ void enemy_update(int id, entity_t* entity) {
     entity->time += delta_time;
 }
 
-void game_initalize() {
+void game_initialize() {
     
     player_texture_run_down = texture_import("player_run_down.png", GL_NEAREST, GL_REPEAT);
     player_texture_run_up = texture_import("player_run_up.png", GL_NEAREST, GL_REPEAT);
@@ -118,15 +120,18 @@ void game_initalize() {
     
     enemy_texture = texture_import("test.png", GL_LINEAR, GL_REPEAT);
     
+}
+
+void game_load_level() {
     
-    // spawning entity example
+    
     entity_t e = ENTITY_DEFAULT;
     e.position = { 2, 4 };
     e.texture = player_texture_run_up;
     e.update_func = player_update;
     e.color = {1,1,1};
     e.texture_scale = {0.25,1};
-    int entity_id = entity_spawn(e);
+    player_entity_id = entity_spawn(e);
     
     
     for(int i = 0; i < 10; i++) {
@@ -148,5 +153,17 @@ void game_initalize() {
         entity_spawn(e);
     }
     
-    
 };
+
+void game_early_update() {
+    
+}
+
+void game_late_update() {
+    if(player_entity_id >= 0) {
+        player_entity = entity_get(player_entity_id);
+    }
+    
+    printf("player ptr = 0x%x\n",(int)player_entity);
+    
+}

@@ -140,24 +140,37 @@ void player_update(int id, entity_t* entity) {
 }
 
 /* ENEMIES */
-
-void projectile_update(int id, entity_t* entity) {
-    entity->position += entity->velocity;
-    entity->color -= m_v3{0.8,1,1} * delta_time * 0.05f;
-    
-}
-
-void enemy_update(int id, entity_t* entity) {
-    if(entity->time > 1.0f){
-        
+void projectile_update_1(int id, entity_t* entity)
+{
+    entity->position += entity->velocity*delta_time;
+    entity->color -= m_v3{0.8,1,1} * delta_time * 2;
+    if (entity->collision_count > 0){
+        entity_destroy(id);
     }
     
-    
-    player_entity->position.x = 0;
-    
-    
-    entity->time += delta_time;
 }
+void projectile_on_collision(int id, entity_t* entity, int other_id, entity_t* other_entity){
+    other_entity->health--;
+    printf("au---------------------------------------");
+}
+void enemy_update(int id, entity_t* entity) {
+    entity->time += delta_time;
+    if(entity->time > 1.0f){
+        for(int i = 0; i < 1; i++) {
+            entity_t e = ENTITY_DEFAULT;
+            const float bullet_speed = 5;
+            e.velocity = m_v2_normalize(player_entity->position - entity->position)*bullet_speed;
+            e.position =  entity->position+e.velocity/bullet_speed;
+            e.update_func = projectile_update_1;
+            e.texture = enemy_texture;
+            e.on_collision_func = projectile_on_collision;
+            
+            entity_spawn(e);
+            entity->time = -5;
+        }
+    }
+}
+
 
 /* GAME */
 
@@ -205,7 +218,7 @@ void game_load_level() {
         e.position = m_randv2() * 10;
         e.update_func = enemy_update;
         e.texture = enemy_texture;
-        //entity_spawn(e);
+        entity_spawn(e);
     }
     
     

@@ -25,6 +25,7 @@ unsigned int shader_base2d;
 
 unsigned int quadVAO, quadVBO;
 unsigned int cursor_tex;
+unsigned int floor_tex;
 
 static void print_gl_errors(const char* text) {
 	auto e = glGetError();
@@ -63,6 +64,12 @@ printf("\t" message "\n"); \
 
 unsigned int tex;
 
+
+static void test_col_update(int id, entity_t* entity) {
+    entity->color = entity->collision_count > 0 ? m_v3{1,1,0} : m_v3{0,1,1};
+    
+}
+
 void graphics_initialize() {
     
     const m_v2 quad2d_verts[6] = {
@@ -92,6 +99,17 @@ void graphics_initialize() {
     
     
     cursor_tex = texture_import("cursor.png", GL_NEAREST, GL_REPEAT);
+    floor_tex = texture_import("test.png",GL_NEAREST, GL_REPEAT);
+    
+    
+    for(int i = 0; i < 10; i++) {
+        entity_t e = ENTITY_DEFAULT;
+        e.texture = cursor_tex;
+        e.position = m_randv2() * 20;
+        e.update_func = test_col_update;
+        entity_spawn(e);
+    }
+    
 }
 
 void graphics_render_world(camera_t* cam) {
@@ -105,6 +123,18 @@ void graphics_render_world(camera_t* cam) {
     shader_set_float("view_dist", cam->distance);
     shader_set_float("view_rot",  cam->rotation);
     shader_set_float("aspect_ratio",(float)window_x / (float)window_y);
+    
+    const float floor_scale = 1000;
+    const float h_floor_scale = floor_scale * 0.25f;
+    const float floor_tile_scale = 10;
+    draw_quad(
+              {-h_floor_scale,-h_floor_scale},
+              {floor_scale, floor_scale},
+              floor_tex,
+              {floor_scale / floor_tile_scale,floor_scale / floor_tile_scale},
+              {},
+              {1,1,1}
+              );
     
     draw_quad({0,0},{ 1,1}, tex,{1,1},{}, {1,1,1});
     draw_quad({1,0},{ 1,1}, tex,{1,1},{}, {1,0,0});

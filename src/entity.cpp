@@ -74,23 +74,6 @@ void entity_global_update() {
     
     c_foreach(i, cmap_entity, entity_global_container) {
         entity_t* e = &i.ref->second;
-		
-        switch(e->col_mode) {
-            case collision_mode::STARTED_COLLIDING:{
-                e->col_mode = collision_mode::COLLIDING;
-            }break;
-            case collision_mode::COLLIDING:{
-                if(e->collision_count <= 0) e->col_mode = collision_mode::STOPPED_COLLIDING;
-            }break;
-            case collision_mode::STOPPED_COLLIDING:{
-                if(e->collision_count > 0) e->col_mode = collision_mode::STARTED_COLLIDING;
-                else e->col_mode = collision_mode::NOT_COLLIDING;
-            }break;
-            case collision_mode::NOT_COLLIDING:{
-                if(e->collision_count > 0) e->col_mode = collision_mode::STARTED_COLLIDING;
-            }break;
-        }
-        
         e->collision_count = 0;
     }
     
@@ -107,7 +90,7 @@ void entity_global_update() {
             float l = m_v2_length(dir);
             float s12 = fabsf(e->scale.x) + fabsf(e2->scale.x);
             if(l > (s12 * 0.5f)) continue;
-            m_v2 ndir = (dir / l) * 0.5f;
+            m_v2 ndir = (dir / l) * 0.499f;
             float penetration = s12 - l;
             m_v2 mid = m_v2_lerp(e->position, e2->position, 0.5);
             

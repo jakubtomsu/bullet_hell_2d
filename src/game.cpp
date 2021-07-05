@@ -132,11 +132,30 @@ void projectile_update(int id, entity_t* entity) {
         // damage hit entity
     }
 }
+/*void enemy_default_update(int id, entity_t* entity)
+{
+
+    //entity->time = -10;
+    //printf("<<<<<<<<<<<<<<<<<<<<<<<<<%f>>>>>>>>>>>>>>>>>>>>>>>>>>>>", entity->time);
+}
+*/
 
 void enemy_update(int id, entity_t* entity) {
+    
     if(entity->time > 1.0f){
+        //enemy_default_update(id, entity);
+        printf("%f------------------------------------------------------------------", entity->time);
+        //for(int i = 0; i < 10; i++) {
+        //entity_t e = ENTITY_DEFAULT;
+        //e.position =  m_randv2() * 10;
+        //e.texture = player_texture_idle_down;
+        //entity_spawn(e);
+        //entity->time = 0;
+        //}
         
     }
+    
+    
     entity->time += delta_time;
 }
 
@@ -180,10 +199,10 @@ void game_initalize() {
     
     for(int i = 0; i < 10; i++) {
         entity_t e = ENTITY_DEFAULT;
-        e.position = m_randv2() * 10;
-        e.update_func = enemy_update;
-        e.texture = enemy_texture;
-        //entity_spawn(e);
+        e.position =  m_randv2() * 10;
+        //e.update_func = enemy_update;
+        e.texture = player_texture_idle_down;
+        entity_spawn(e);
     }
     
     

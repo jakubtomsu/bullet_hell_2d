@@ -65,12 +65,6 @@ printf("\t" message "\n"); \
 
 unsigned int tex;
 
-
-static void test_col_update(int id, entity_t* entity) {
-    entity->color = entity->collision_count > 0 ? m_v3{1,1,0} : m_v3{0,1,1};
-    
-}
-
 void graphics_initialize() {
     
     const m_v2 quad2d_verts[6] = {
@@ -101,15 +95,6 @@ void graphics_initialize() {
     
     cursor_tex = texture_import("cursor.png", GL_NEAREST, GL_REPEAT);
     floor_tex = texture_import("background.png",GL_NEAREST, GL_REPEAT);
-    
-    
-    for(int i = 0; i < 10; i++) {
-        entity_t e = ENTITY_DEFAULT;
-        e.texture = cursor_tex;
-        e.position = m_randv2() * 20;
-        e.update_func = test_col_update;
-        entity_spawn(e);
-    }
     
 }
 

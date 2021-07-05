@@ -24,13 +24,49 @@ void exaple_update_function(int id, entity_t* entity) {
     
 }
 
-void player_bullet_update(int id, entity_t* entity) {
+/* PLAYER */
+m_v2 camera_shake;
+float camera_shake_strength;
+const float camera_shake_length = 6.0f;
+const float camera_shake_freq = 2;
+m_v2 player_cursor = {0.5,0.5};
+float fist_time = 0;
+const float mouse_speed = 0.01;
+
+void player_fist_update(int id, entity_t* entity) {
+    
+    if(!player_entity) return;
+    
+    player_cursor += input_mouse_offset* mouse_speed * m_v2{1,-1};
+    m_v2 cursor_ndir = m_v2_normalize(player_cursor);
+    player_cursor = cursor_ndir * 2;
+    cursor_pos = player_entity->position + player_cursor;
+    fist_time -= delta_time;
+    entity->velocity = entity->velocity / (1.0f + (delta_time * 25));
+    if(input_pressed(GLFW_MOUSE_BUTTON_1)) {
+        entity->velocity += cursor_ndir * 150;
+        camera_shake_strength += 1;
+        entity->color *= 8;
+        fist_time = 0.2f;
+    }
+    entity->color = m_v3_lerp(entity->color, {1,1,1}, delta_time * 10);
+    
+    /*
+    entity->position = m_v2_lerp(entity->position, player_entity->position + player_cursor, delta_time* 15);*/
+    
+    entity->velocity += ((player_entity->position + player_cursor) - entity->position) * 3;
+    entity->velocity += player_entity->velocity * 0.05f;
+    
     entity->position += entity->velocity * delta_time;
-    entity->time += delta_time;
-    if(entity->time > 0.06f) entity_destroy(id);
 }
 
-m_v2 player_cursor = {0.5,0.5};
+void player_fist_on_collision(int id, entity_t* entity, int other_id, entity_t* other_entity) {
+    if(other_id == player_entity_id || other_entity->flags.collision_static || fist_time < 0) return;
+    
+    other_entity->velocity += m_v2_normalize(player_cursor) * 5;
+    other_entity->color *= 4;
+}
+
 void player_update(int id, entity_t* entity) { 
     m_v2 dir = {};
     
@@ -62,17 +98,11 @@ void player_update(int id, entity_t* entity) {
         PLAYER_ON_RUN;
     }
     
-    const float mouse_speed = 20;
-    player_cursor += input_mouse_offset* mouse_speed * m_v2{1,-1} / m_v2{(float)window_x, (float)window_y};
-    m_v2 cursor_ndir = m_v2_normalize(player_cursor);
-    player_cursor = m_v2_lerp(player_cursor, cursor_ndir * 5, delta_time * 40);
-    cursor_pos = entity->position + player_cursor;
     
     
     
-    
-    entity->velocity = entity->velocity / ( 1.0f + (delta_time * 15.0f));
-    entity->velocity += dir * delta_time * 350.0f;
+    entity->velocity = entity->velocity / ( 1.0f + (delta_time * 18.0f));
+    entity->velocity += dir * delta_time * 300.0f;
     
     if(input_pressed(GLFW_KEY_SPACE)) entity->velocity += dir * 180.0f;
     
@@ -86,30 +116,30 @@ void player_update(int id, entity_t* entity) {
         }
         entity->time += delta_time * 14;
     }else{
-        entity->texture_offset.x = 1.0f;
+        entity->texture_offset.x = entity->texture == player_texture_run_horizontal ? 0.0 : 1.0f;
         entity->time = 0;
     }
     
     
-    
-    if(input_pressed(GLFW_MOUSE_BUTTON_1)){
-        entity_t bullet = ENTITY_DEFAULT;
-        bullet.position = entity->position + cursor_ndir * 1.4f;
-        bullet.texture = player_fist_texture;
-        bullet.velocity = cursor_ndir * 30.0f;
-        bullet.update_func = player_bullet_update;
-        entity_spawn(bullet);
-    }
-    
+    camera_shake = m_v2{
+        sinf(engine_time * 20.2345 * camera_shake_freq)*2 + sinf(engine_time *camera_shake_freq * 58.2342) + cosf(-engine_time * camera_shake_freq * 234.2312) + cosf(-engine_time*camera_shake_freq * 2344.2312)/2,
+        sinf(engine_time*camera_shake_freq * 18.987)*2 + sinf(-engine_time*camera_shake_freq * 73.2342) + cosf(-engine_time*camera_shake_freq * 194.2312) + cosf(-engine_time*camera_shake_freq * 2784.2312)/2,
+    };
+    camera_shake_strength *= 1.0f - (camera_shake_length * delta_time);
     
     
     main_camera.position = m_v2_lerp(
                                      main_camera.position,
-                                     entity->position + entity->velocity * 0.1f + player_cursor * 0.35f,
+                                     entity->position +
+                                     entity->velocity * 0.1f +
+                                     player_cursor * 0.35f + 
+                                     camera_shake * camera_shake_strength,
                                      delta_time * 8.0f
                                      );
     
 }
+
+/* ENEMIES */
 
 void projectile_update(int id, entity_t* entity) {
     entity->position += entity->velocity;
@@ -121,8 +151,15 @@ void enemy_update(int id, entity_t* entity) {
     if(entity->time > 1.0f){
         
     }
+    
+    
+    player_entity->position.x = 0;
+    
+    
     entity->time += delta_time;
 }
+
+/* GAME */
 
 void game_initialize() {
     
@@ -136,11 +173,16 @@ void game_initialize() {
     
 }
 
+void vel_update(int id, entity_t* entity) {
+    entity->velocity = entity->velocity / (1.0f + (delta_time * 4));
+    entity->position += entity->velocity * delta_time;
+}
+
 void game_load_level() {
     
-    
+    // player
     entity_t e = ENTITY_DEFAULT;
-    e.position = { 2, 4 };
+    e.position = { 0,-4 };
     e.texture = player_texture_run_up;
     e.update_func = player_update;
     e.color = {1,1,1};
@@ -148,7 +190,16 @@ void game_load_level() {
     e.health = 4;
     player_entity_id = entity_spawn(e);
     
+    // player fist
+    entity_t player_f = ENTITY_DEFAULT;
+    player_f.position = e.position + m_v2{0,1};
+    player_f.texture = player_fist_texture;
+    player_f.update_func = player_fist_update;
+    player_f.on_collision_func = player_fist_on_collision;
+    entity_spawn(player_f);
     
+    
+    // enemies
     for(int i = 0; i < 10; i++) {
         entity_t e = ENTITY_DEFAULT;
         e.position = m_randv2() * 10;
@@ -165,6 +216,7 @@ void game_load_level() {
         e.scale = {2,2};
         e.texture = 0;
         //e.flags.collision_static = 1;
+        e.update_func = vel_update;
         entity_spawn(e);
     }
     

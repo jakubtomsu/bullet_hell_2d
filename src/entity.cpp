@@ -33,6 +33,7 @@ void entity_destroy(int entity_id) {
 }
 
 entity_t* entity_get(int entity_id) {
+    if(!cmap_entity_contains(&entity_global_container, entity_id)) return nullptr;
     cmap_entity_mapped_t* mapped = cmap_entity_at(&entity_global_container, entity_id);
 	return mapped;
 }

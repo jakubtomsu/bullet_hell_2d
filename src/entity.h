@@ -32,7 +32,7 @@ struct entity_t {
     entity_on_collision_func on_collision_func;
     
     // gameplay data
-    unsigned int health;
+    int health;
     m_v2 velocity;
     float time;
     int step;

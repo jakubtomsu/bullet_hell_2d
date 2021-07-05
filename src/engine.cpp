@@ -78,7 +78,7 @@ int main(int argc, char* argv[]) {
     glfwSetCursorPosCallback(window,       input_mouse_move_callback);
     glfwSetMouseButtonCallback(window,     input_mouse_button_callback);
     glfwSetKeyCallback(window,             input_key_press_callback);
-    glfwSwapInterval(1); // 0 == no vsync
+    glfwSwapInterval(0); // 0 == no vsync
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
         printf("(MAIN) Failed to initialize GLAD\n");
         return -1;

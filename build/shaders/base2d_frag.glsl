@@ -33,7 +33,7 @@ void main() {
 	float vny =  abs(frag_pos.y);
 	float vingette =  pow(vnx * vnx + vny * vny, 0.5);
 	vingette = pow(vingette, 3);
-	vingette *= 0.015;
+	vingette *= 0.06;
 	frag_color -= vec4(vec3(vingette), 0.0);
 
 
@@ -50,7 +50,8 @@ void main() {
 
 	vec3 ncol = normalize(frag_color.rgb);
 	float val = length(frag_color.rgb);
-	frag_color = vec4(ncol * round(val * 32) / 32.0,1.0);
+	const float steps = 16;
+	frag_color = vec4(ncol * round(val * steps) / steps,1.0);
 
 
 //	frag_color = vec4(color,1.0);

@@ -111,7 +111,7 @@ void graphics_render_world(camera_t* cam) {
     shader_set_float("aspect_ratio",(float)window_x / (float)window_y);
     
     const float floor_scale = 1000;
-    const float floor_tile_scale = 10;
+    const float floor_tile_scale =25;
     draw_quad(
               {0,0},
               {floor_scale, floor_scale},

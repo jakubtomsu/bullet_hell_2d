@@ -12,6 +12,7 @@ unsigned int player_texture_run_down;
 unsigned int player_fist_texture;
 unsigned int enemy_texture;
 int player_entity_id = -1;
+int enemy_count = 0;
 entity_t* player_entity;
 
 
@@ -69,6 +70,7 @@ void player_fist_on_collision(int id, entity_t* entity, int other_id, entity_t* 
 
 void player_update(int id, entity_t* entity) { 
     m_v2 dir = {};
+    if (entity->health <= 0) game_load_level(); /**Game crashes on load level**/
     
 #define  PLAYER_ON_RUN entity->texture_scale.x = 1.0f / 4.0f;
 #define PLAYER_ON_STOP_RUNNING entity->texture_scale.x = 0.25f; entity->time = 0;
@@ -96,6 +98,10 @@ void player_update(int id, entity_t* entity) {
         entity->scale.x = -1;
         entity->texture = player_texture_run_horizontal;
         PLAYER_ON_RUN;
+        
+    }
+    if(input_down(GLFW_KEY_X)){
+        enemy_count = 0;
     }
     
     
@@ -138,30 +144,54 @@ void player_update(int id, entity_t* entity) {
                                      );
     
 }
+/* PICK UPS */
+void pickup_on_collision(int id, entity_t* entity, int other_id, entity_t* other_entity)
+{
+    if (other_entity == player_entity){
+        player_entity->health++;
+        entity_destroy(id);
+    }
+}
 
 /* ENEMIES */
+//projectile
 void projectile_update_1(int id, entity_t* entity)
 {
+    entity->time += delta_time;
     entity->position += entity->velocity*delta_time;
     entity->color -= m_v3{0.8,1,1} * delta_time * 2;
-    if (entity->collision_count > 0){
+    if (entity->collision_count > 0 && entity-> time >= 0.2f){
         entity_destroy(id);
     }
     
 }
 void projectile_on_collision(int id, entity_t* entity, int other_id, entity_t* other_entity){
-    other_entity->health--;
-    printf("au---------------------------------------");
+    if ( entity-> time >= 0.2f){other_entity->health--;}
 }
+//enemy
 void enemy_update(int id, entity_t* entity) {
     entity->time += delta_time;
+    //destroy entity on 0 health
+    if (entity->health <= 0){
+        //health pick up
+        entity_t e = ENTITY_DEFAULT;
+        e.position = entity->position;
+        e.texture = enemy_texture;
+        e.color = {1, 0, 0};
+        e.scale = {0.5f,0.5f};
+        enemy_count--;
+        e.on_collision_func = pickup_on_collision;
+        entity_spawn(e);
+        entity_destroy(id);
+    }
     if(entity->time > 1.0f){
-        for(int i = 0; i < 1; i++) {
+        for(int i = 0; i < 1; i++) { //create projectile entity
             entity_t e = ENTITY_DEFAULT;
             const float bullet_speed = 5;
             e.velocity = m_v2_normalize(player_entity->position - entity->position)*bullet_speed;
             e.position =  entity->position+e.velocity/bullet_speed;
             e.update_func = projectile_update_1;
+            e.time = 0;
             e.texture = enemy_texture;
             e.on_collision_func = projectile_on_collision;
             
@@ -170,8 +200,21 @@ void enemy_update(int id, entity_t* entity) {
         }
     }
 }
-
-
+void spawn_enemys(int id, entity_t* entity){
+    printf("%i---------------------------", enemy_count);
+    if (enemy_count <= 0){
+        // enemies
+        for(int i = 0; i < 10; i++) {
+            entity_t e = ENTITY_DEFAULT;
+            e.position = m_randv2() * 10;
+            e.update_func = enemy_update;
+            e.texture = enemy_texture;
+            e.health = 1;
+            enemy_count++;
+            entity_spawn(e);
+        }
+    }
+}
 /* GAME */
 
 void game_initialize() {
@@ -211,18 +254,6 @@ void game_load_level() {
     player_f.on_collision_func = player_fist_on_collision;
     entity_spawn(player_f);
     
-    
-    // enemies
-    for(int i = 0; i < 10; i++) {
-        entity_t e = ENTITY_DEFAULT;
-        e.position = m_randv2() * 10;
-        e.update_func = enemy_update;
-        e.texture = enemy_texture;
-        entity_spawn(e);
-    }
-    
-    
-    
     for(int i = 0; i < 10; i++) {
         entity_t e = ENTITY_DEFAULT;
         e.position = m_randv2() * 10;
@@ -232,6 +263,10 @@ void game_load_level() {
         e.update_func = vel_update;
         entity_spawn(e);
     }
+    // enemy spawner
+    entity_t entity_spawner = ENTITY_DEFAULT;
+    entity_spawner.update_func = spawn_enemys;
+    entity_spawn(entity_spawner);
     
 };
 

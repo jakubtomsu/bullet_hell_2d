@@ -36,6 +36,7 @@ M_MATH_INLINE float m_clampf(float a, float min, float max) { return (a > min ? 
 M_MATH_INLINE float m_rand01() { return ((float)rand() / (float)RAND_MAX); }
 M_MATH_INLINE float m_randn() {return ((m_rand01() * 2) - 1.0f); }
 M_MATH_INLINE m_v2 m_randv2() {return {m_randn(), m_randn()}; }
+#define M_PI_F 3.141592653589f
 
 M_MATH_INLINE m_v2 operator+ (m_v2 left, m_v2 right) { return { left.x + right.x, left.y + right.y }; }
 M_MATH_INLINE m_v3 operator+ (m_v3 left, m_v3 right) { return { left.x + right.x, left.y + right.y, left.z + right.z }; }

@@ -1,6 +1,7 @@
 
 #include "entity.h"
 #include <stdio.h>
+#include <assert.h>
 
 cmap_entity entity_global_container = cmap_entity_init();
 
@@ -9,14 +10,16 @@ struct entity_spawing_t {
     int id;
     entity_t entity;
 };
-entity_spawing_t entity_spawn_buffer[200];
+#define ENTITY_INTERMEDIATE_BUFFER_SIZE 300
+entity_spawing_t entity_spawn_buffer[ENTITY_INTERMEDIATE_BUFFER_SIZE];
 unsigned int entity_spawn_buffer_counter;
-int entity_destroy_buffer[200];
+int entity_destroy_buffer[ENTITY_INTERMEDIATE_BUFFER_SIZE];
 unsigned int entity_destroy_buffer_counter;
 
 
 
 int entity_spawn(entity_t entity_data) {
+    assert(entity_spawn_buffer_counter < ENTITY_INTERMEDIATE_BUFFER_SIZE);
     int id = entity_counter;
     entity_counter++;
     
@@ -28,12 +31,13 @@ int entity_spawn(entity_t entity_data) {
 }
 
 void entity_destroy(int entity_id) {
+    assert(entity_destroy_buffer_counter < ENTITY_INTERMEDIATE_BUFFER_SIZE);
     entity_destroy_buffer[entity_destroy_buffer_counter] = entity_id;
     entity_destroy_buffer_counter++;
 }
 
 entity_t* entity_get(int entity_id) {
-    if(!cmap_entity_contains(&entity_global_container, entity_id)) return nullptr;
+    if(!cmap_entity_contains(&entity_global_container, entity_id)) return 0;
     cmap_entity_mapped_t* mapped = cmap_entity_at(&entity_global_container, entity_id);
 	return mapped;
 }
@@ -95,8 +99,9 @@ void entity_global_update() {
             float penetration = s12 - l;
             m_v2 mid = m_v2_lerp(e->position, e2->position, 0.5);
             
-            if(!e->flags.collision_static) e->position = mid - (ndir * penetration);
-            if(!e2->flags.collision_static)  e2->position = mid + (ndir * penetration);
+            bool bothstatic = e->flags.collision_static && e2->flags.collision_static;
+            if(!e->flags.collision_static || bothstatic) e->position = mid - (ndir * penetration);
+            if(!e2->flags.collision_static || bothstatic)  e2->position = mid + (ndir * penetration);
             
             e->collision_count++;
             e2->collision_count++;

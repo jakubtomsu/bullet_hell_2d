@@ -6,17 +6,38 @@
 #include "engine.h"
 #include "m_math.h"
 
+
+
+
 unsigned int player_texture_run_horizontal;
 unsigned int player_texture_run_up;
 unsigned int player_texture_run_down;
-unsigned int player_fist_texture;
 unsigned int enemy_texture;
 unsigned int health_texture;
 unsigned int explosion_texture;
+unsigned int explosion_lowres_texture;
 unsigned int projectile_texture;
+unsigned int pillar_texture;
+
+
 int player_entity_id = -1;
-int enemy_count = 0;
 entity_t* player_entity;
+
+
+m_v2 camera_shake;
+float camera_shake_strength;
+const float camera_shake_length = 0.05f;
+const float camera_shake_freq = 4;
+m_v2 player_cursor = {0.5,0.5};
+const float mouse_speed = 0.02;
+const float player_speed = 280;
+float player_speed_mul = 0;
+
+
+int enemy_count = 0;
+
+
+
 
 
 // id = unique number for each entity.
@@ -29,59 +50,64 @@ void exaple_update_function(int id, entity_t* entity) {
 }
 
 
-/* PLAYER FIST */
-m_v2 camera_shake;
-float camera_shake_strength;
-const float camera_shake_length = 6.0f;
-const float camera_shake_freq = 2;
-m_v2 player_cursor = {0.5,0.5};
-float fist_time = 0;
-const float mouse_speed = 0.01;
 
-void player_fist_update(int id, entity_t* entity) {
-    
-    if(!player_entity) return;
-    
-    fist_time -= delta_time;
-    entity->velocity = entity->velocity / (1.0f + (delta_time * 25));
-    if(input_pressed(GLFW_MOUSE_BUTTON_1)) {
-        entity->velocity += m_v2_normalize(player_cursor) * 150;
-        camera_shake_strength += 1;
-        entity->color *= 8;
-        fist_time = 0.2f;
-    }
-    entity->color = m_v3_lerp(entity->color, {1,1,1}, delta_time * 10);
-    
-    /*
-    entity->position = m_v2_lerp(entity->position, player_entity->position + player_cursor, delta_time* 15);*/
-    
-    entity->velocity += ((player_entity->position + player_cursor) - entity->position) * 3;
-    entity->velocity += player_entity->velocity * 0.05f;
-    
-    entity->position += entity->velocity * delta_time;
-}
-
-void player_fist_on_collision(int id, entity_t* entity, int other_id, entity_t* other_entity) {
-    if(other_id == player_entity_id || other_entity->flags.collision_static || fist_time < 0) return;
-    
-    other_entity->velocity += m_v2_normalize(player_cursor) * 5;
-    other_entity->color *= 4;
-}
-
-/* PLAYER BULLET */
+/* EXPLOSION */
 
 float player_bullet_timer = 0;
 
-void player_bullet_update(int id, entity_t* entity) {
-    entity->position += entity->velocity * delta_time;
+void explosion_update(int id, entity_t* entity) {
     entity->time+=delta_time;
     const float lifetime = 0.25f;
     if(entity->time > lifetime) entity_destroy(id);
-    entity->texture_offset.x = floorf((entity->time / lifetime) * 4);
+    entity->texture_offset.x = m_clampf(floorf((entity->time / lifetime) * 4),0.0,3.0);
 }
 
-void player_bullet_on_collision(int id, entity_t* entity, int other_id, entity_t* other_entity) {
+void explosion_on_collision(int id, entity_t* entity, int other_id, entity_t* other_entity) {
+    other_entity->velocity += m_v2_normalize(other_entity->position - entity->position) * 25;
+}
+
+void explosion_spawn(m_v2 position, float scale, m_v3 color) {
     
+    entity_t e = ENTITY_DEFAULT;
+    e.position = position;
+    //e.velocity = m_v2_normalize(player_cursor) * 30;
+    e.update_func = explosion_update;
+    e.on_collision_func = explosion_on_collision;
+    e.texture = scale < 1.0f ? explosion_lowres_texture : explosion_texture;
+    e.texture_scale.x = 0.25;
+    e.scale = {scale, scale};
+    e.flags.collision_static = 1;
+    entity_spawn(e);
+    camera_shake_strength += 0.3f;
+}
+
+/* PROJECTILES */
+
+void projectile_update(int id, entity_t* entity) {
+    entity->position += entity->velocity * delta_time;
+    entity->time -= delta_time;
+    if(entity->time < 0) entity_destroy(id);
+}
+
+void projectile_on_collision(int id, entity_t* entity, int other_id, entity_t* other_entity) {
+    entity_destroy(id);
+    explosion_spawn(entity->position, entity->scale.x, entity->color);
+    other_entity->health--;
+}
+
+void projectile_spawn(m_v2 pos, m_v2 vel, float scale, float duration, m_v3 color) {
+    entity_t e = ENTITY_DEFAULT;
+    e.position = pos;
+    e.velocity = vel;
+    e.scale = {scale, scale};
+    e.color = color;
+    e.update_func = projectile_update;
+    e.on_collision_func = projectile_on_collision;
+    e.texture_scale.x = 0.25;
+    e.texture = explosion_texture;
+    e.time = duration;
+    entity_spawn(e);
+    camera_shake_strength += 0.05f;
 }
 
 /* PLAYER */
@@ -121,7 +147,8 @@ void player_update(int id, entity_t* entity) {
     
     // update velocity
     entity->velocity = entity->velocity / ( 1.0f + (delta_time * 18.0f));
-    entity->velocity += dir * delta_time * 270.0f;
+    entity->velocity += dir * delta_time * player_speed * player_speed_mul;
+    player_speed_mul += (1.0f - player_speed_mul) * (delta_time * 4);
     
     if(input_pressed(GLFW_KEY_SPACE)) entity->velocity += dir * 80.0f;
     // apply velocity
@@ -143,43 +170,40 @@ void player_update(int id, entity_t* entity) {
     // cursor
     player_cursor += input_mouse_offset* mouse_speed * m_v2{1,-1};
     float len = m_v2_length(player_cursor);
-    if(len > 8) player_cursor = (player_cursor / len) * 8;
+    if(len > 6) player_cursor = (player_cursor / len) * 6;
     //player_cursor = m_v2_normalize(player_cursor) * 8;
     cursor_pos = entity->position + player_cursor;
     
     
     // bullets
-    if(input_pressed(GLFW_MOUSE_BUTTON_1) && player_bullet_timer > 0.2f) {
+    if(input_down(GLFW_MOUSE_BUTTON_1) && player_bullet_timer > 0.1f) {
         player_bullet_timer = 0;
-        
-        entity_t e = ENTITY_DEFAULT;
-        e.position = entity->position + m_v2_normalize(player_cursor) * 2.5;
-        //e.velocity = m_v2_normalize(player_cursor) * 30;
-        e.update_func = player_bullet_update;
-        e.on_collision_func = player_bullet_on_collision;
-        e.texture = explosion_texture;
-        e.texture_scale.x = 0.25;
-        e.scale = {3,3};
-        entity_spawn(e);
+        camera_shake_strength += 0.5f;
+        projectile_spawn(
+                         entity->position + m_v2_normalize(player_cursor) * 1.5f,
+                         m_v2_normalize(player_cursor) * 30,
+                         1,
+                         0.5,
+                         {1,1,0}
+                         );
     }
     player_bullet_timer+= delta_time;
-    
     
     
     camera_shake = m_v2{
         sinf(engine_time * 20.2345 * camera_shake_freq)*2 + sinf(engine_time *camera_shake_freq * 58.2342) + cosf(-engine_time * camera_shake_freq * 234.2312) + cosf(-engine_time*camera_shake_freq * 2344.2312)/2,
         sinf(engine_time*camera_shake_freq * 18.987)*2 + sinf(-engine_time*camera_shake_freq * 73.2342) + cosf(-engine_time*camera_shake_freq * 194.2312) + cosf(-engine_time*camera_shake_freq * 2784.2312)/2,
     };
-    camera_shake_strength *= 1.0f - (camera_shake_length * delta_time);
+    camera_shake_strength /= 1.0f + (delta_time / camera_shake_length);
     
     
     main_camera.position = m_v2_lerp(
                                      main_camera.position,
                                      entity->position +
-                                     entity->velocity * 0.1f +
-                                     player_cursor * 0.1f + 
-                                     camera_shake * camera_shake_strength,
-                                     delta_time * 6.0f
+                                     entity->velocity +
+                                     player_cursor + 
+                                     camera_shake * camera_shake_strength * 0.1f,
+                                     delta_time * 4
                                      );
     
 }
@@ -195,63 +219,88 @@ void pickup_on_collision(int id, entity_t* entity, int other_id, entity_t* other
 
 /* ENEMIES */
 
-//projectile
-void projectile_update_1(int id, entity_t* entity)
-{
-    entity->time += delta_time;
-    entity->position += entity->velocity*delta_time;
-    entity->color -= m_v3{0.8,1,1} * delta_time *0.05f;
-    if (entity->collision_count > 0 && entity-> time >= 0.2f){
-        entity_destroy(id);
+void projectile_spawn_circle(m_v2 pos, float speed, float scale, float duration, m_v3 color, float radius, unsigned int count) {
+    for(int i = 0; i < count; i++) {
+        float t = (float)i / (count) * M_PI_F * 2;
+        m_v2 dir =  m_v2{sinf(t), cosf(t)};
+        projectile_spawn(
+                         pos + dir * radius,
+                         dir * speed,
+                         scale,
+                         duration,
+                         color
+                         );
     }
-    
 }
 
-void projectile_on_collision(int id, entity_t* entity, int other_id, entity_t* other_entity){
-    if ( entity-> time >= 0.2f){other_entity->health--;}
-}
 
 //enemy
-void enemy_update(int id, entity_t* entity) {
-    entity->time += delta_time;
+void enemy_default_update(int id, entity_t* entity) {
     //destroy entity on 0 health
     if (entity->health <= 0){
         //health pick up
         entity_t e = ENTITY_DEFAULT;
         e.position = entity->position;
         e.texture = health_texture;
-        e.color = {1, 0, 0};
-        e.scale = {0.5f,0.5f};
+        e.color = {0.8,0.1,0.2};
+        e.scale = {1,1};
         enemy_count--;
         e.on_collision_func = pickup_on_collision;
         entity_spawn(e);
         entity_destroy(id);
+        //spawn_explosion(entity->position,1);
     }
-    if(entity->time > 1.0f){
-        for(int i = 0; i < 1; i++) { //create projectile entity
-            entity_t e = ENTITY_DEFAULT;
-            const float bullet_speed = 5;
-            e.velocity = m_v2_normalize(player_entity->position - entity->position)*bullet_speed;
-            e.position =  entity->position+e.velocity/bullet_speed;
-            e.update_func = projectile_update_1;
-            e.time = 0;
-            e.texture = projectile_texture;
-            e.on_collision_func = projectile_on_collision;
-            
-            entity_spawn(e);
-            entity->time = -5;
-        }
-    }
+    
+    entity->time += delta_time;
+    
+    entity->texture_offset.x = (int)roundf(entity->time * 4) % 2 == 0? 1.0f : 0.0f;
+    entity->color = m_v3{1,1,1} * (1.0f + (entity->time * entity->time * entity->time ));
 }
 
-void spawn_enemys(int id, entity_t* entity){
-    printf("%i---------------------------", enemy_count);
+void enemy_circler_update(int id, entity_t* entity) {
+    enemy_default_update(id, entity);
+    
+    if(entity->time > 1.0f){
+        const float bullet_speed = 10;
+        projectile_spawn_circle(
+                                entity->position,
+                                bullet_speed,
+                                1,
+                                3,
+                                {1,0,0},
+                                3.5,
+                                8
+                                );
+        entity->time = 0;
+    }
+    
+}
+
+void enemy_sniper_update(int id, entity_t* entity) {
+    enemy_default_update(id, entity);
+    
+    if(entity->time > 2.0f){
+        const float bullet_speed = 8;
+        m_v2 dir = m_v2_normalize(player_entity->position - entity->position);
+        projectile_spawn(
+                         entity->position + dir * 2,
+                         dir * bullet_speed,
+                         1,
+                         3,
+                         {1,0,0}
+                         );
+        entity->time = 0;
+    }
+    
+}
+
+void enemy_spawner_run(){
     if (enemy_count <= 0){
         // enemies
         for(int i = 0; i < 10; i++) {
             entity_t e = ENTITY_DEFAULT;
-            e.position = m_randv2() * 10;
-            e.update_func = enemy_update;
+            e.position = m_randv2() * 20;
+            e.update_func = enemy_circler_update;
             e.texture = enemy_texture;
             e.health = 1;
             enemy_count++;
@@ -272,13 +321,13 @@ void game_initialize() {
     player_texture_run_up = texture_import("player_run_up.png", TEX_INTERPOLATION, GL_REPEAT);
     player_texture_run_horizontal = texture_import("player_run_horizontal.png", TEX_INTERPOLATION, GL_REPEAT);
     
-    player_fist_texture = texture_import("fist.png", TEX_INTERPOLATION, GL_REPEAT);
-    
     enemy_texture = texture_import("enemy1.png", TEX_INTERPOLATION, GL_REPEAT);
     
     projectile_texture = texture_import("projectile.png", TEX_INTERPOLATION, GL_REPEAT);
     health_texture = texture_import("cross.png", TEX_INTERPOLATION, GL_REPEAT);
     explosion_texture = texture_import("explosion.png", TEX_INTERPOLATION, GL_REPEAT);
+    explosion_lowres_texture = texture_import("explosion_lowres.png", TEX_INTERPOLATION, GL_REPEAT);
+    pillar_texture= texture_import("pillar.png", TEX_INTERPOLATION, GL_REPEAT);
     
 }
 
@@ -308,20 +357,19 @@ void game_load_level() {
     entity_spawn(player_f);
     */
     
-    for(int i = 0; i < 10; i++) {
+    
+    for(int i = 0; i < 20; i++) {
         entity_t e = ENTITY_DEFAULT;
-        e.position = m_randv2() * 10;
-        e.scale = {2,2};
-        e.texture = 0;
-        //e.flags.collision_static = 1;
-        e.update_func = vel_update;
+        e.position = m_randv2() * 30;
+        e.scale = {4,4};
+        e.texture = pillar_texture;
+        e.flags.collision_static = 1;
         entity_spawn(e);
     }
     
+    
     // enemy spawner
-    entity_t entity_spawner = ENTITY_DEFAULT;
-    entity_spawner.update_func = spawn_enemys;
-    entity_spawn(entity_spawner);
+    enemy_spawner_run();
     
 };
 

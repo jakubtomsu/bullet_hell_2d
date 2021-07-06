@@ -60,8 +60,8 @@ int main(int argc, char* argv[]) {
     GLFWmonitor* monitor = glfwGetMonitors(&monitor_count)[0]; // 0 is main monitor
     
     const GLFWvidmode* mode = glfwGetVideoMode(monitor);
-    //window_height = mode->height;
-    //window_width = mode->width;
+    window_y = mode->height;
+    window_x = mode->width;
     
     GLFWwindow* window = glfwCreateWindow(window_x, window_y, "game", NULL, NULL);
     if (window == NULL) {
@@ -71,7 +71,7 @@ int main(int argc, char* argv[]) {
     }
     engine_glfw_window = window;
     printf("window created\n");
-    //glfwSetWindowMonitor(window, monitor, 0, 0, mode->width, mode->height, mode->refreshRate);
+    glfwSetWindowMonitor(window, monitor, 0, 0, mode->width, mode->height, mode->refreshRate);
     glfwMakeContextCurrent(window);
     glfwSetInputMode(window, GLFW_CURSOR,  GLFW_CURSOR_DISABLED);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);

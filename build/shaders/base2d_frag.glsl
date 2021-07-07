@@ -33,10 +33,10 @@ void main() {
 	float vny =  abs(frag_pos.y);
 	float vingette =  pow(vnx * vnx + vny * vny, 0.5);
 	vingette = pow(vingette, 3);
-	vingette *= 0.04;
+	vingette *= 0.05;
 	frag_color -= vec4(vec3(vingette), 0.0);
 
-	frag_color *= vec4(0.9,1,1,1);
+	frag_color *= vec4(0.86,0.94,1,1);
 
 
 	float cl = pow(length(frag_color.rgb), 2);

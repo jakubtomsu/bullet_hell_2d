@@ -13,6 +13,7 @@ unsigned int player_texture_run_horizontal;
 unsigned int player_texture_run_up;
 unsigned int player_texture_run_down;
 unsigned int enemy_texture;
+unsigned int enemy_2_texture;
 unsigned int health_texture;
 unsigned int explosion_texture;
 unsigned int explosion_lowres_texture;
@@ -26,7 +27,7 @@ entity_t* player_entity;
 
 m_v2 camera_shake;
 float camera_shake_strength;
-const float camera_shake_length = 0.05f;
+const float camera_shake_length = 0.1f;
 const float camera_shake_freq = 4;
 m_v2 player_cursor = {0.5,0.5};
 const float mouse_speed = 0.02;
@@ -57,7 +58,7 @@ float player_bullet_timer = 0;
 
 void explosion_update(int id, entity_t* entity) {
     entity->time+=delta_time;
-    const float lifetime = 0.25f;
+    const float lifetime = 0.15f;
     if(entity->time > lifetime) entity_destroy(id);
     entity->texture_offset.x = m_clampf(floorf((entity->time / lifetime) * 4),0.0,3.0);
 }
@@ -78,7 +79,7 @@ void explosion_spawn(m_v2 position, float scale, m_v3 color) {
     e.scale = {scale, scale};
     e.flags.collision_static = 1;
     entity_spawn(e);
-    camera_shake_strength += 0.3f;
+    camera_shake_strength += 0.1f;
 }
 
 /* PROJECTILES */
@@ -150,7 +151,11 @@ void player_update(int id, entity_t* entity) {
     entity->velocity += dir * delta_time * player_speed * player_speed_mul;
     player_speed_mul += (1.0f - player_speed_mul) * (delta_time * 4);
     
-    if(input_pressed(GLFW_KEY_SPACE)) entity->velocity += dir * 80.0f;
+    if(input_pressed(GLFW_KEY_SPACE)){
+        entity->velocity += dir * 50.0f;
+        explosion_spawn(entity->position, 3.0f, {1,1,1});
+        camera_shake_strength += 4.0f;
+    }
     // apply velocity
     entity->position += entity->velocity * delta_time;
     
@@ -171,23 +176,33 @@ void player_update(int id, entity_t* entity) {
     player_cursor += input_mouse_offset* mouse_speed * m_v2{1,-1};
     float len = m_v2_length(player_cursor);
     if(len > 6) player_cursor = (player_cursor / len) * 6;
+    main_camera.distance = M_LERP(main_camera.distance, 19 + len, delta_time * 2);
     //player_cursor = m_v2_normalize(player_cursor) * 8;
     cursor_pos = entity->position + player_cursor;
     
     
     // bullets
-    if(input_down(GLFW_MOUSE_BUTTON_1) && player_bullet_timer > 0.1f) {
+    if(input_down(GLFW_MOUSE_BUTTON_1) && player_bullet_timer > 0.17f) {
         player_bullet_timer = 0;
-        camera_shake_strength += 0.5f;
+        camera_shake_strength += 1.0f;
         projectile_spawn(
                          entity->position + m_v2_normalize(player_cursor) * 1.5f,
-                         m_v2_normalize(player_cursor) * 30,
+                         m_v2_normalize(player_cursor) * 40,
                          1,
-                         0.5,
-                         {1,1,0}
+                         1.8,
+                         {0.9,0.8,0.6}
                          );
     }
     player_bullet_timer+= delta_time;
+    
+    
+    if(input_pressed(GLFW_MOUSE_BUTTON_2)) {
+        explosion_spawn(
+                        entity->position + m_v2_normalize(player_cursor) * 3.0f,
+                        4.0f,
+                        {0.9,0.9,0.9}
+                        );
+    }
     
     
     camera_shake = m_v2{
@@ -200,9 +215,9 @@ void player_update(int id, entity_t* entity) {
     main_camera.position = m_v2_lerp(
                                      main_camera.position,
                                      entity->position +
-                                     entity->velocity +
-                                     player_cursor + 
-                                     camera_shake * camera_shake_strength * 0.1f,
+                                     entity->velocity * 0.25f +
+                                     player_cursor * 0.8f+ 
+                                     camera_shake * camera_shake_strength,
                                      delta_time * 4
                                      );
     
@@ -254,22 +269,26 @@ void enemy_default_update(int id, entity_t* entity) {
     entity->time += delta_time;
     
     entity->texture_offset.x = (int)roundf(entity->time * 4) % 2 == 0? 1.0f : 0.0f;
-    entity->color = m_v3{1,1,1} * (1.0f + (entity->time * entity->time * entity->time ));
+    entity->color =m_v3_lerp(
+                             m_v3{1,1,1} * (1.0f + m_clampf(entity->time * entity->time * entity->time, 0.0, 0.8f)),
+                             m_v3{0.9,0.1,0.2},
+                             1.0f / (float)entity->health
+                             );
 }
 
 void enemy_circler_update(int id, entity_t* entity) {
     enemy_default_update(id, entity);
     
-    if(entity->time > 1.0f){
-        const float bullet_speed = 10;
+    if(entity->time > 2.0f){
+        const float bullet_speed = 7;
         projectile_spawn_circle(
                                 entity->position,
                                 bullet_speed,
-                                1,
+                                2,
                                 3,
-                                {1,0,0},
+                                {0.7,0.2,0.3},
                                 3.5,
-                                8
+                                6
                                 );
         entity->time = 0;
     }
@@ -279,15 +298,15 @@ void enemy_circler_update(int id, entity_t* entity) {
 void enemy_sniper_update(int id, entity_t* entity) {
     enemy_default_update(id, entity);
     
-    if(entity->time > 2.0f){
-        const float bullet_speed = 8;
+    if(entity->time > 1.0f) {
+        const float bullet_speed = 11;
         m_v2 dir = m_v2_normalize(player_entity->position - entity->position);
         projectile_spawn(
                          entity->position + dir * 2,
                          dir * bullet_speed,
-                         1,
+                         1.8,
                          3,
-                         {1,0,0}
+                         {0.9,0.5,0.1}
                          );
         entity->time = 0;
     }
@@ -297,17 +316,33 @@ void enemy_sniper_update(int id, entity_t* entity) {
 void enemy_spawner_run(){
     if (enemy_count <= 0){
         // enemies
-        for(int i = 0; i < 10; i++) {
+        
+        for(int i = 0; i < 4; i++) {
             entity_t e = ENTITY_DEFAULT;
-            e.position = m_randv2() * 20;
+            e.position = m_randv2() * 30;
             e.update_func = enemy_circler_update;
-            e.texture = enemy_texture;
-            e.health = 1;
+            e.texture = enemy_2_texture;
+            e.health = 6;
             enemy_count++;
             e.texture_scale = {0.5,1.0};
             e.scale = {2,2};
+            e.time = (-m_randn() * 4) - 2;
             entity_spawn(e);
         }
+        
+        for(int i = 0; i < 2; i++) {
+            entity_t e = ENTITY_DEFAULT;
+            e.position = m_randv2() * 30;
+            e.update_func = enemy_sniper_update;
+            e.texture = enemy_texture;
+            e.health = 3;
+            enemy_count++;
+            e.texture_scale = {0.5,1.0};
+            e.scale = {2,2};
+            e.time = (-m_randn() * 4) - 3;
+            entity_spawn(e);
+        }
+        
     }
 }
 
@@ -322,6 +357,7 @@ void game_initialize() {
     player_texture_run_horizontal = texture_import("player_run_horizontal.png", TEX_INTERPOLATION, GL_REPEAT);
     
     enemy_texture = texture_import("enemy1.png", TEX_INTERPOLATION, GL_REPEAT);
+    enemy_2_texture = texture_import("enemy2.png", TEX_INTERPOLATION, GL_REPEAT);
     
     projectile_texture = texture_import("projectile.png", TEX_INTERPOLATION, GL_REPEAT);
     health_texture = texture_import("cross.png", TEX_INTERPOLATION, GL_REPEAT);
@@ -345,7 +381,7 @@ void game_load_level() {
     e.update_func = player_update;
     e.color = {1,1,1};
     e.texture_scale = {0.25,1};
-    e.health = 4;
+    e.health = 2;
     player_entity_id = entity_spawn(e);
     /*
     // player fist

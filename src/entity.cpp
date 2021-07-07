@@ -111,7 +111,3 @@ void entity_global_update() {
     }
     
 }
-
-int collision_query_circle(m_v2 pos, float radius, collision_callback callback) {
-    
-}

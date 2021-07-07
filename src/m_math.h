@@ -74,6 +74,8 @@ M_MATH_INLINE float m_v2_length(m_v2 a) { return (sqrtf((a.x * a.x) + (a.y * a.y
 M_MATH_INLINE m_v2 m_v2_normalize(m_v2 a) {return (a / m_v2_length(a)); }
 M_MATH_INLINE m_v3 m_v3_lerp(m_v3 a, m_v3 b, float t) { return((a *(1.0f - t)) + (b * t)); }
 
+#define M_LERP(a,b,t) (((a) *(1.0f - (t))) + ((b) * (t)))
+
 
 
 #endif // M_MATH_H

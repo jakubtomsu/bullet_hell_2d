@@ -120,11 +120,11 @@ void graphics_render_world(camera_t* cam) {
               {},
               {1,1,1}
               );
-    
+    /*
     draw_quad({0,0},{ 1,1}, tex,{1,1},{}, {1,1,1});
     draw_quad({1,0},{ 1,1}, tex,{1,1},{}, {1,0,0});
     draw_quad({0,1},{ 1,1}, tex,{1,1},{}, {0,1,0});
-    
+*/
     
     int ecount = 0;
     c_foreach_3(i, cmap_entity, entity_global_container) {
@@ -135,7 +135,7 @@ void graphics_render_world(camera_t* cam) {
     }
     printf("entity count = %i\n", ecount);
     
-    const float cursor_scale = 0.25f;
+    const float cursor_scale = 0.4f;
     draw_quad(cursor_pos, {cursor_scale,cursor_scale}, cursor_tex,{1,1},{}, {0.8,1,1});
     
     

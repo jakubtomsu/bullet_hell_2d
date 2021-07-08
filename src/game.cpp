@@ -6,7 +6,7 @@
 #include "engine.h"
 #include "m_math.h"
 #include <stdlib.h>
-#include <unistd.h>
+
 
 
 
@@ -21,6 +21,7 @@ unsigned int explosion_texture;
 unsigned int explosion_lowres_texture;
 unsigned int projectile_texture;
 unsigned int pillar_texture;
+unsigned int death_screen_texture;
 
 
 int player_entity_id = -1;
@@ -190,7 +191,7 @@ void player_update(int id, entity_t* entity) {
                          m_v2_normalize(player_cursor) * 40,
                          1,
                          1.8,
-                         {0.9,0.8,0.6}
+                         {1,0.9,0.2}
                          );
     }
     player_bullet_timer+= delta_time;
@@ -369,6 +370,7 @@ void game_initialize() {
     explosion_texture = texture_import("explosion.png", TEX_INTERPOLATION, GL_REPEAT);
     explosion_lowres_texture = texture_import("explosion_lowres.png", TEX_INTERPOLATION, GL_REPEAT);
     pillar_texture= texture_import("pillar.png", TEX_INTERPOLATION, GL_REPEAT);
+    death_screen_texture = texture_import("death_screen.png", TEX_INTERPOLATION, GL_REPEAT);
     
 }
 
@@ -439,16 +441,18 @@ void game_on_render_update() {
                   {0.8,0.1,0.2}
                   );
     }
+    
+    
     if(player_entity != NULL && player_entity->health <= 0){
         draw_quad(
-                  {0,0},
-                  {1,1},
-                  health_texture,
+                  main_camera.position,
+                  {(float)main_camera.distance,0.5f * (float)main_camera.distance},
+                  death_screen_texture,
                   {1,1},
                   {},
                   {0.8,0.1,0.2}
                   );
-        sleep(5);
-        exit(0);
+        
+        engine_should_quit = true;
     }
 }

@@ -43,37 +43,43 @@ entity_t* entity_get(int entity_id) {
 }
 
 void entity_global_update() {
-    
-    // spawn entities
-    for(int i = 0; i < entity_spawn_buffer_counter; i++){
-        cmap_entity_insert(
-                           &entity_global_container,
-                           entity_spawn_buffer[i].id, 
-                           entity_spawn_buffer[i].entity
-                           );
-        printf("spawned entity %i\n", entity_spawn_buffer[i].id);
-    }
-    entity_spawn_buffer_counter = 0;
-    
-    //update entities
-    c_foreach(i, cmap_entity, entity_global_container) {
-        entity_t* e = &i.ref->second;
-		if(e->update_func){
-            e->update_func(i.ref->first, e);
+    try{
+        // spawn entities
+        printf("entity spawn buffer counter = %i\n", entity_spawn_buffer_counter);
+        for(int i = 0; i < entity_spawn_buffer_counter; i++){
+            cmap_entity_insert(
+                               &entity_global_container,
+                               entity_spawn_buffer[i].id, 
+                               entity_spawn_buffer[i].entity
+                               );
+            printf("spawned entity %i\n", entity_spawn_buffer[i].id);
         }
-	}
-    
-    // destroy entities
-    for(int i = 0; i < entity_destroy_buffer_counter; i++){
-        cmap_entity_erase(
-                          &entity_global_container,
-                          entity_destroy_buffer[i]
-                          );
-        printf("destroyed entity %i\n", entity_destroy_buffer[i]);
+        entity_spawn_buffer_counter = 0;
+        
+        //update entities
+        c_foreach(i, cmap_entity, entity_global_container) {
+            entity_t* e = &i.ref->second;
+            if(e->update_func){
+                e->update_func(i.ref->first, e);
+            }
+        }
+        
+        // destroy entities
+        printf("entity destroy buffer counter = %i\n", entity_destroy_buffer_counter);
+        for(int i = 0; i < entity_destroy_buffer_counter; i++){
+            cmap_entity_erase(
+                              &entity_global_container,
+                              entity_destroy_buffer[i]
+                              );
+            printf("destroyed entity %i\n", entity_destroy_buffer[i]);
+        }
+        entity_destroy_buffer_counter = 0;
+        
     }
-    entity_destroy_buffer_counter = 0;
-    
-    
+    catch (int e) {
+        printf("EXCEPTION %i", e);
+        exit(-1);
+    }
     
     // terribly slow collision :(
     

@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <unistd.h>
 
 #define HANDMADE_MATH_IMPLEMENTATION
 #include "m_math.h"
@@ -121,7 +122,10 @@ int main(int argc, char* argv[]) {
         
         if(input_pressed(GLFW_KEY_F5) || input_pressed(GLFW_KEY_ESCAPE)) engine_should_quit = true;
         
-        glfwSetWindowShouldClose(window, engine_should_quit);
+        if(engine_should_quit) {
+            glfwSetWindowShouldClose(window, true);
+            sleep(1);
+        }
         
     }
     

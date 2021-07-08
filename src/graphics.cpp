@@ -133,7 +133,7 @@ void graphics_render_world(camera_t* cam) {
         ecount++;
         
     }
-    printf("entity count = %i\n", ecount);
+    printf("rendered entity count = %i\n", ecount);
     
     const float cursor_scale = 0.4f;
     draw_quad(cursor_pos, {cursor_scale,cursor_scale}, cursor_tex,{1,1},{}, {0.8,1,1});

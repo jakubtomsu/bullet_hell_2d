@@ -5,6 +5,8 @@
 #include "input.h"
 #include "engine.h"
 #include "m_math.h"
+#include <stdlib.h>
+#include <unistd.h>
 
 
 
@@ -118,8 +120,6 @@ void player_update(int id, entity_t* entity) {
     
 #define  PLAYER_ON_RUN entity->texture_scale.x = 1.0f / 4.0f;
 #define PLAYER_ON_STOP_RUNNING entity->texture_scale.x = 0.25f; entity->time = 0;
-    
-    
     // input
     if(input_down(GLFW_KEY_W)){
         dir.y++;
@@ -297,7 +297,11 @@ void enemy_circler_update(int id, entity_t* entity) {
 
 void enemy_sniper_update(int id, entity_t* entity) {
     enemy_default_update(id, entity);
-    
+    /*if(entity->texture_offset.x != 0 && entity->time >= 0.25){
+        entity->texture_offset.x -= -0.2;
+        entity->time = 0;
+    }
+*/
     if(entity->time > 1.0f) {
         const float bullet_speed = 11;
         m_v2 dir = m_v2_normalize(player_entity->position - entity->position);
@@ -337,7 +341,8 @@ void enemy_spawner_run(){
             e.texture = enemy_texture;
             e.health = 3;
             enemy_count++;
-            e.texture_scale = {0.5,1.0};
+            e.texture_offset.x = 0.8;
+            e.texture_scale = {0.2,1.0};
             e.scale = {2,2};
             e.time = (-m_randn() * 4) - 3;
             entity_spawn(e);
@@ -433,5 +438,17 @@ void game_on_render_update() {
                   {},
                   {0.8,0.1,0.2}
                   );
+    }
+    if(player_entity != NULL && player_entity->health <= 0){
+        draw_quad(
+                  {0,0},
+                  {1,1},
+                  health_texture,
+                  {1,1},
+                  {},
+                  {0.8,0.1,0.2}
+                  );
+        sleep(5);
+        exit(0);
     }
 }
